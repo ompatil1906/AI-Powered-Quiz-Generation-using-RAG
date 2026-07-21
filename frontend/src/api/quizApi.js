@@ -28,9 +28,10 @@ export const generateQuiz = async (lessonId = 'lesson-1', options = {}) => {
     },
     body: JSON.stringify({
       lessonId,
-      questionCount: options.count || 5,
+      questionCount: options.questionCount || 5,
       difficulty: options.difficulty || 'medium',
-      questionTypes: ['mcq', 'true_false'],
+      questionTypes: options.questionTypes || ['mcq', 'true_false'],
+      bloomTaxonomy: options.bloomTaxonomy || 'Remembering',
     }),
   });
 
