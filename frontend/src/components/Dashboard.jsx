@@ -43,77 +43,84 @@ export const Dashboard = ({ onQuizGenerated, showToast }) => {
   };
 
   return (
-    <>
-      <div className="card fade-in">
+    <div className="structured-dashboard">
+      <div className="config-sidebar fade-in">
+        <div className="sidebar-header">
+          <h3>Quiz Settings</h3>
+          <p>Configure your assessment parameters.</p>
+        </div>
+        
         <div className="form-group">
-          <label htmlFor="transcript">1. Paste Lesson Transcript</label>
+          <label htmlFor="count">Number of Questions</label>
+          <input 
+            type="number" 
+            id="count" 
+            min="1" 
+            max="20"
+            value={config.questionCount}
+            onChange={(e) => setConfig({...config, questionCount: e.target.value})}
+          />
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="difficulty">Difficulty Level</label>
+          <select 
+            id="difficulty"
+            value={config.difficulty}
+            onChange={(e) => setConfig({...config, difficulty: e.target.value})}
+          >
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="type">Question Format</label>
+          <select 
+            id="type"
+            value={config.questionTypes}
+            onChange={(e) => setConfig({...config, questionTypes: e.target.value})}
+          >
+            <option value="mcq">Multiple Choice</option>
+            <option value="true_false">True / False</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="input-main fade-in" style={{ animationDelay: '0.1s' }}>
+        <div className="main-header">
+          <h3>Source Content</h3>
+        </div>
+        
+        <div className="form-group transcript-group">
           <textarea 
             id="transcript"
-            rows="6"
-            placeholder="Paste the text content of your lesson here..."
+            className="seamless-textarea"
+            placeholder="Paste your lesson transcript, article, or document text here..."
             value={transcript}
             onChange={(e) => setTranscript(e.target.value)}
           ></textarea>
         </div>
-        <div className="button-group">
+        
+        <div className="action-footer">
           <button 
+            className="btn-outline"
             onClick={handleIngest} 
             disabled={isIngesting || !transcript.trim()}
           >
-            {isIngesting ? <Loader /> : 'Ingest Transcript'}
+            {isIngesting ? <Loader /> : '1. Ingest Content'}
           </button>
-        </div>
-      </div>
-
-      <div className="card fade-in" style={{ animationDelay: '0.1s' }}>
-        <label>2. Configure Quiz</label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-          <div className="form-group">
-            <label htmlFor="count">Number of Questions</label>
-            <input 
-              type="number" 
-              id="count" 
-              min="1" 
-              max="20"
-              value={config.questionCount}
-              onChange={(e) => setConfig({...config, questionCount: e.target.value})}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="difficulty">Difficulty</label>
-            <select 
-              id="difficulty"
-              value={config.difficulty}
-              onChange={(e) => setConfig({...config, difficulty: e.target.value})}
-            >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="type">Question Type</label>
-            <select 
-              id="type"
-              value={config.questionTypes}
-              onChange={(e) => setConfig({...config, questionTypes: e.target.value})}
-            >
-              <option value="mcq">Multiple Choice</option>
-              <option value="true_false">True / False</option>
-            </select>
-          </div>
-        </div>
-        
-        <div className="button-group">
+          
           <button 
+            className="btn-primary"
             onClick={handleGenerate} 
             disabled={isGenerating}
-            className="btn-secondary"
           >
-            {isGenerating ? <Loader /> : 'Generate Quiz'}
+            {isGenerating ? <Loader /> : '2. Generate Quiz'}
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
