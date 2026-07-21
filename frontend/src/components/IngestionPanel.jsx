@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
+import { DEFAULT_LESSON_ID, DEFAULT_TRANSCRIPT } from '../data/defaultTranscript';
 
 export function IngestionPanel({ transcript, setTranscript, lessonId, setLessonId, onIngest, isIngesting }) {
   return (
@@ -25,7 +26,19 @@ export function IngestionPanel({ transcript, setTranscript, lessonId, setLessonI
         </div>
 
         <div className="space-y-2 flex-1 flex flex-col">
-          <Label htmlFor="transcript">Transcript content</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="transcript">Transcript content</Label>
+            <button 
+              type="button"
+              onClick={() => {
+                setLessonId(DEFAULT_LESSON_ID);
+                setTranscript(DEFAULT_TRANSCRIPT);
+              }}
+              className="text-[11px] text-primary hover:underline flex items-center gap-1 font-medium"
+            >
+              ⚡ Inject Sample Content
+            </button>
+          </div>
           <Textarea
             id="transcript"
             placeholder="Paste your lesson transcript, article, or document text here..."

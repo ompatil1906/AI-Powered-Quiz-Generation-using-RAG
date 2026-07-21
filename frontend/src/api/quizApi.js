@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 export const ingestTranscript = async (content, lessonId = 'lesson-1') => {
   const response = await fetch(`${API_BASE_URL}/ingest`, {
@@ -42,3 +42,31 @@ export const generateQuiz = async (lessonId = 'lesson-1', options = {}) => {
 
   return response.json();
 };
+
+export const checkHealth = async () => {
+  const startTime = performance.now();
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`);
+    const endTime = performance.now();
+    const latency = Math.round(endTime - startTime);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return {
+      ...data,
+      latency,
+      apiUrl: API_BASE_URL,
+    };
+  } catch (error) {
+    const endTime = performance.now();
+    return {
+      status: 'offline',
+      api_ready: false,
+      error: error.message,
+      latency: Math.round(endTime - startTime),
+      apiUrl: API_BASE_URL,
+    };
+  }
+};
+

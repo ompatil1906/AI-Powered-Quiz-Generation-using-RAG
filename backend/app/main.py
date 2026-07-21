@@ -15,6 +15,20 @@ app.add_middleware(
 app.include_router(ingest.router)
 app.include_router(quiz.router)
 
+@app.get("/health")
+async def health_check():
+    from app.services.llm_service import llm_service
+    is_ready = llm_service.check_ready()
+    return {
+        "status": "healthy" if is_ready else "degraded",
+        "api_ready": is_ready,
+        "llm_model": "gemini-2.5-flash",
+        "embedding_model": "text-embedding-004",
+        "vector_store": "ChromaDB (Persistent)",
+        "rag_pipeline": "Enabled",
+        "version": "1.0.0"
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

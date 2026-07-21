@@ -5,6 +5,9 @@ import { useQuizApi } from './hooks/useQuizApi';
 import { IngestionPanel } from './components/IngestionPanel';
 import { ConfigurationPanel } from './components/ConfigurationPanel';
 import { QuizResults } from './components/QuizResults';
+import { EvaluatorPanel } from './components/EvaluatorPanel';
+import { Activity } from 'lucide-react';
+import { DEFAULT_LESSON_ID, DEFAULT_TRANSCRIPT } from './data/defaultTranscript';
 import './index.css';
 
 function App() {
@@ -14,6 +17,7 @@ function App() {
   const [lessonId, setLessonId] = useState('');
   const [transcript, setTranscript] = useState('');
   const [isIngested, setIsIngested] = useState(false);
+  const [isEvaluatorOpen, setIsEvaluatorOpen] = useState(false);
   
   const [config, setConfig] = useState({
     questionCount: 5,
@@ -33,6 +37,12 @@ function App() {
     await generate(lessonId, config);
   };
 
+  const handleLoadSample = (sampleLessonId, sampleText) => {
+    setLessonId(sampleLessonId);
+    setTranscript(sampleText);
+    showToast('Loaded sample transcript successfully!', 'success');
+  };
+
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
       
@@ -40,7 +50,7 @@ function App() {
       <div className="w-1/3 min-w-[350px] max-w-[500px] flex flex-col border-r bg-card/50 overflow-hidden">
         
         {/* Header */}
-        <div className="p-6 border-b shrink-0 bg-card">
+        <div className="p-6 border-b shrink-0 bg-card flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
               Q
@@ -50,6 +60,15 @@ function App() {
               <p className="text-xs text-muted-foreground mt-1">Transform content into assessments</p>
             </div>
           </div>
+
+          <button
+            onClick={() => setIsEvaluatorOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-all shadow-sm"
+            title="Open Evaluator System Info & Metrics"
+          >
+            <Activity className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">System Inspector</span>
+          </button>
         </div>
         
         {/* Scrollable Panels */}
@@ -84,6 +103,12 @@ function App() {
       </main>
 
       <Toast toast={toast} />
+
+      <EvaluatorPanel
+        isOpen={isEvaluatorOpen}
+        onClose={() => setIsEvaluatorOpen(false)}
+        onLoadSample={handleLoadSample}
+      />
     </div>
   );
 }
