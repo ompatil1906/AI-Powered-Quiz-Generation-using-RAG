@@ -24,7 +24,6 @@ export const QuizPlayer = ({ quiz }) => {
 
   return (
     <div className="quiz-container fade-in">
-      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Your Quiz</h2>
       
       {quiz.map((q, idx) => (
         <div key={idx} className="question-card">

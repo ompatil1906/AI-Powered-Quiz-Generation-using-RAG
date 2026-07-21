@@ -15,15 +15,30 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <header className="fade-in">
-        <h1>AI Quiz Generator</h1>
-        <p className="subtitle">Transform lesson transcripts into interactive quizzes instantly.</p>
-      </header>
+    <div className="app-container">
+      <nav className="top-nav fade-in">
+        <div className="nav-brand">
+          <div className="nav-logo">Q</div>
+          <span className="nav-title">AI Quiz Studio</span>
+        </div>
+      </nav>
 
-      <main>
-        <Dashboard onQuizGenerated={handleQuizGenerated} showToast={showToast} />
-        <QuizPlayer quiz={quiz} />
+      <main className="workspace">
+        <aside className="workspace-sidebar fade-in" style={{ animationDelay: '0.1s' }}>
+          <Dashboard onQuizGenerated={handleQuizGenerated} showToast={showToast} />
+        </aside>
+        
+        <section className="workspace-content fade-in" style={{ animationDelay: '0.2s' }}>
+          {!quiz ? (
+            <div className="empty-state">
+              <div className="empty-icon">✨</div>
+              <h3>Ready to Generate</h3>
+              <p>Configure your quiz on the left and click "Generate Quiz" to see the results here.</p>
+            </div>
+          ) : (
+            <QuizPlayer quiz={quiz} />
+          )}
+        </section>
       </main>
 
       <Toast toast={toast} />
