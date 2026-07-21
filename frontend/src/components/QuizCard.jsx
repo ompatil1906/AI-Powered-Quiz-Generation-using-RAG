@@ -142,10 +142,19 @@ export function QuizCard({ question, index, selectedAnswer, onAnswerChange, isEv
             <AccordionItem value="explanation" className="border-b-0">
               <AccordionTrigger className="text-base py-4 hover:no-underline flex items-center justify-start gap-2 font-semibold">
                 <HelpCircle className="w-5 h-5 text-primary" />
-                <span className="flex-1 text-left text-foreground">View Explanation</span>
+                <span className="flex-1 text-left text-foreground">View Explanation & RAG Citation</span>
               </AccordionTrigger>
-              <AccordionContent className="text-base text-foreground leading-relaxed pl-8 pb-4">
-                {question.explanation}
+              <AccordionContent className="text-base text-foreground leading-relaxed pl-8 pb-4 space-y-3">
+                <p>{question.explanation}</p>
+                {question.sourceSnippet && (
+                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs space-y-1">
+                    <div className="flex items-center justify-between text-primary font-bold">
+                      <span>🎯 Verified Context Evidence</span>
+                      <span className="text-[10px] bg-primary/10 px-2 py-0.5 rounded uppercase">{question.contextRef || 'RAG Grounded'}</span>
+                    </div>
+                    <p className="font-mono text-muted-foreground italic">"{question.sourceSnippet}"</p>
+                  </div>
+                )}
               </AccordionContent>
             </AccordionItem>
           </Accordion>

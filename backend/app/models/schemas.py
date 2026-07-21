@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 class IngestRequest(BaseModel):
@@ -10,3 +10,9 @@ class GenerateQuizRequest(BaseModel):
     questionCount: int = 5
     difficulty: str = "medium"
     questionTypes: List[str] = ["mcq"]
+    bloomTaxonomy: Optional[str] = "Remembering"
+
+class RAGQueryRequest(BaseModel):
+    lessonId: str
+    query: str
+    topK: Optional[int] = 5

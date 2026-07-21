@@ -108,6 +108,7 @@ function App() {
         isOpen={isEvaluatorOpen}
         onClose={() => setIsEvaluatorOpen(false)}
         onLoadSample={handleLoadSample}
+        activeLessonId={lessonId}
       />
     </div>
   );

@@ -43,6 +43,36 @@ export const generateQuiz = async (lessonId = 'lesson-1', options = {}) => {
   return response.json();
 };
 
+export const previewRagQuery = async (lessonId, query, topK = 5) => {
+  const response = await fetch(`${API_BASE_URL}/rag/query-preview`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      lessonId,
+      query,
+      topK,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to query vector database');
+  }
+
+  return response.json();
+};
+
+export const fetchRagMetrics = async (lessonId = 'agent-mcp-lesson') => {
+  const response = await fetch(`${API_BASE_URL}/rag/eval-metrics?lessonId=${encodeURIComponent(lessonId)}`);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to fetch RAG evaluation metrics');
+  }
+  return response.json();
+};
+
 export const checkHealth = async () => {
   const startTime = performance.now();
   try {
@@ -69,4 +99,3 @@ export const checkHealth = async () => {
     };
   }
 };
-
