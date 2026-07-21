@@ -26,7 +26,7 @@ export function useQuizApi(showToast) {
       const data = await generateQuiz(lessonId, options);
       setQuiz(data.questions);
       showToast?.('Quiz generated successfully!', 'success');
-      return data.questions;
+      return data;
     } catch (error) {
       showToast?.(error.message || 'Failed to generate quiz', 'error');
       return null;

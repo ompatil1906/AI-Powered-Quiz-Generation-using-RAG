@@ -22,7 +22,8 @@ import {
   CheckCircle,
   AlertTriangle,
   Award,
-  DatabaseBackup
+  DatabaseBackup,
+  Info
 } from 'lucide-react';
 import { checkHealth, previewRagQuery, fetchRagMetrics } from '../api/quizApi';
 import { DEFAULT_LESSON_ID, DEFAULT_TRANSCRIPT } from '../data/defaultTranscript';
@@ -35,7 +36,7 @@ const SAMPLE_TRANSCRIPTS = {
   }
 };
 
-export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }) {
+export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId, isIngested, hasQuiz }) {
   const [healthData, setHealthData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('quality'); // 'quality' | 'testbench' | 'bloom' | 'system'
@@ -46,10 +47,12 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
 
   // Interactive RAG Inspector State
   const [testQuery, setTestQuery] = useState('What is Model Context Protocol (MCP)?');
-  const [testLessonId, setTestLessonId] = useState(activeLessonId || DEFAULT_LESSON_ID);
+  const [testLessonId, setTestLessonId] = useState(activeLessonId || '');
   const [ragResults, setRagResults] = useState(null);
   const [isSearchingRag, setIsSearchingRag] = useState(false);
   const [ragError, setRagError] = useState('');
+
+  const isSessionReady = Boolean(isIngested && hasQuiz && activeLessonId && activeLessonId.trim());
 
   const fetchHealthAndMetrics = async () => {
     setIsLoading(true);
@@ -60,13 +63,39 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
     setHealthData(hData);
     setIsLoading(false);
 
-    // Fetch dynamic live RAG evaluation metrics from backend ChromaDB
+    // Dynamic metrics ONLY calculated when transcript is ingested AND quiz is generated for active lesson
+    if (!isSessionReady) {
+      setLiveMetrics({
+        status: 'not_ingested',
+        chunkCount: 0,
+        overallScore: 0,
+        faithfulnessScore: 0,
+        relevanceScore: 0,
+        boundaryScore: 0,
+        citationScore: 0,
+        totalChars: 0,
+        avgChunkSize: 0
+      });
+      setIsLoadingMetrics(false);
+      return;
+    }
+
     try {
-      const targetId = activeLessonId || testLessonId || DEFAULT_LESSON_ID;
+      const targetId = activeLessonId.trim();
       const mData = await fetchRagMetrics(targetId);
       setLiveMetrics(mData);
     } catch (err) {
-      console.warn("Failed to fetch live RAG metrics:", err);
+      setLiveMetrics({
+        status: 'not_ingested',
+        chunkCount: 0,
+        overallScore: 0,
+        faithfulnessScore: 0,
+        relevanceScore: 0,
+        boundaryScore: 0,
+        citationScore: 0,
+        totalChars: 0,
+        avgChunkSize: 0
+      });
     } finally {
       setIsLoadingMetrics(false);
     }
@@ -90,16 +119,15 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
 
   useEffect(() => {
     if (isOpen) {
-      if (activeLessonId) {
-        setTestLessonId(activeLessonId);
-      }
+      setTestLessonId(activeLessonId || '');
       fetchHealthAndMetrics();
     }
-  }, [isOpen, activeLessonId]);
+  }, [isOpen, activeLessonId, isIngested, hasQuiz]);
 
   if (!isOpen) return null;
 
-  const isIngested = liveMetrics && liveMetrics.status === 'active';
+  const currentTargetId = (activeLessonId && activeLessonId.trim()) || (testLessonId && testLessonId.trim()) || "";
+  const isMetricsAvailable = isSessionReady && liveMetrics && liveMetrics.status === 'active';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200">
@@ -114,19 +142,19 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold tracking-tight">Evaluator & Real-Time RAG Inspector</h2>
-                {isIngested ? (
+                {isMetricsAvailable ? (
                   <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-mono px-2 py-0.5 rounded border border-emerald-500/20 font-bold flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Live Score: {liveMetrics.overallScore}%
                   </span>
                 ) : (
                   <span className="bg-amber-500/10 text-amber-500 text-[10px] font-mono px-2 py-0.5 rounded border border-amber-500/20 font-bold">
-                    Awaiting Ingestion
+                    Assessment Generation Required
                   </span>
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Real-time metrics calculated dynamically from ChromaDB vector store for <code className="font-mono text-foreground font-semibold bg-muted px-1 rounded">{testLessonId}</code>
+                Real-time metrics for {currentTargetId ? <code className="font-mono text-foreground font-semibold bg-muted px-1 rounded">{currentTargetId}</code> : <span className="italic">No active lesson selected</span>}
               </p>
             </div>
           </div>
@@ -196,6 +224,35 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
           {activeTab === 'quality' && (
             <div className="space-y-6">
               
+              {!isMetricsAvailable && (
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs">
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-amber-600 block text-sm">
+                        {!isIngested ? 'Step 1: Content Ingestion Required' : 'Step 2: Quiz Generation Required'}
+                      </span>
+                      <p className="text-muted-foreground mt-0.5">
+                        {!isIngested 
+                          ? "Please paste your lesson transcript into the Ingestion Panel and click 'Process Transcript' to index vectors into ChromaDB."
+                          : "Transcript indexed! Please click 'Generate Quiz' in the Configuration Panel to generate an assessment and compute real-time RAG accuracy scores."
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      onLoadSample(DEFAULT_LESSON_ID, DEFAULT_TRANSCRIPT);
+                      onClose();
+                    }}
+                    className="px-3.5 py-2 text-xs font-bold rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center gap-1.5 shrink-0 shadow-sm"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>⚡ Inject Sample & Test Studio</span>
+                  </button>
+                </div>
+              )}
+
               {/* Overall RAG Quality Header Card */}
               <div className="p-5 rounded-xl border bg-gradient-to-r from-primary/10 via-card to-emerald-500/10 border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -205,22 +262,22 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-extrabold tracking-tight">
-                        {isIngested ? `${liveMetrics.overallScore}%` : '--'}
+                        {isMetricsAvailable ? `${liveMetrics.overallScore}%` : '--'}
                       </span>
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${isIngested ? 'bg-emerald-500/20 text-emerald-600' : 'bg-amber-500/20 text-amber-600'}`}>
-                        {isIngested ? 'Real-Time Vector Analysis' : 'Ingestion Required'}
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${isMetricsAvailable ? 'bg-emerald-500/20 text-emerald-600' : 'bg-amber-500/20 text-amber-600'}`}>
+                        {isMetricsAvailable ? 'Real-Time Vector Analysis' : 'Pending Generation'}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      RAG Context Faithfulness & Grounded Accuracy Score for <code className="font-mono text-foreground font-semibold bg-muted px-1 rounded">{testLessonId}</code>
+                      RAG Context Faithfulness & Grounded Accuracy Score for {currentTargetId ? <code className="font-mono text-foreground font-semibold bg-muted px-1 rounded">{currentTargetId}</code> : 'None'}
                     </p>
                   </div>
                 </div>
 
                 <button
                   onClick={fetchHealthAndMetrics}
-                  disabled={isLoadingMetrics}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-card border hover:bg-muted transition-colors shadow-sm"
+                  disabled={isLoadingMetrics || !isSessionReady}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-card border hover:bg-muted disabled:opacity-50 transition-colors shadow-sm"
                 >
                   <RefreshCw className={`h-3.5 w-3.5 ${isLoadingMetrics ? 'animate-spin' : ''}`} />
                   <span>Re-analyze Vectors</span>
@@ -235,10 +292,10 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                     <Target className="h-3.5 w-3.5 text-primary" />
                   </div>
                   <div className="text-xl font-bold text-foreground">
-                    {isIngested ? `${liveMetrics.faithfulnessScore}%` : '--'}
+                    {isMetricsAvailable ? `${liveMetrics.faithfulnessScore}%` : '--'}
                   </div>
                   <p className="text-[10px] text-emerald-500 font-medium flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3" /> Live Computed
+                    <CheckCircle className="h-3 w-3" /> {isMetricsAvailable ? 'Live Computed' : 'Awaiting Data'}
                   </p>
                 </div>
 
@@ -248,10 +305,10 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                     <BarChart3 className="h-3.5 w-3.5 text-blue-500" />
                   </div>
                   <div className="text-xl font-bold text-foreground">
-                    {isIngested ? `${liveMetrics.relevanceScore}%` : '--'}
+                    {isMetricsAvailable ? `${liveMetrics.relevanceScore}%` : '--'}
                   </div>
                   <p className="text-[10px] text-blue-500 font-medium">
-                    Vector Distance Match
+                    {isMetricsAvailable ? 'Vector Distance Match' : 'Awaiting Data'}
                   </p>
                 </div>
 
@@ -261,10 +318,10 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                     <Layers className="h-3.5 w-3.5 text-purple-500" />
                   </div>
                   <div className="text-xl font-bold text-foreground">
-                    {isIngested ? `${liveMetrics.boundaryScore}%` : '--'}
+                    {isMetricsAvailable ? `${liveMetrics.boundaryScore}%` : '--'}
                   </div>
                   <p className="text-[10px] text-purple-500 font-medium">
-                    Punctuation Preserved
+                    {isMetricsAvailable ? 'Punctuation Preserved' : 'Awaiting Data'}
                   </p>
                 </div>
 
@@ -274,10 +331,10 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                     <DatabaseBackup className="h-3.5 w-3.5 text-amber-500" />
                   </div>
                   <div className="text-xl font-bold text-foreground">
-                    {isIngested ? liveMetrics.chunkCount : 0}
+                    {isMetricsAvailable ? liveMetrics.chunkCount : 0}
                   </div>
                   <p className="text-[10px] text-amber-500 font-medium">
-                    {isIngested ? `Avg ${liveMetrics.avgChunkSize} chars/chunk` : 'No vectors'}
+                    {isMetricsAvailable ? `Avg ${liveMetrics.avgChunkSize} chars/chunk` : 'No vectors'}
                   </p>
                 </div>
               </div>
@@ -290,7 +347,7 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                     Real-Time RAG Accuracy & Quality Analysis
                   </span>
                   <span className="text-xs text-muted-foreground font-mono">
-                    {isIngested ? `${liveMetrics.totalChars.toLocaleString()} total characters indexed` : 'Lesson Not Ingested'}
+                    {isMetricsAvailable ? `${liveMetrics.totalChars.toLocaleString()} total characters indexed` : 'Generation Pending'}
                   </span>
                 </div>
 
@@ -301,17 +358,17 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                     <div className="flex justify-between font-medium">
                       <span>1. Context Grounding & Faithfulness</span>
                       <span className="font-mono text-emerald-500 font-bold">
-                        {isIngested ? `${liveMetrics.faithfulnessScore}%` : '0%'}
+                        {isMetricsAvailable ? `${liveMetrics.faithfulnessScore}%` : '--'}
                       </span>
                     </div>
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-emerald-500 rounded-full transition-all duration-500" 
-                        style={{ width: `${isIngested ? liveMetrics.faithfulnessScore : 0}%` }} 
+                        style={{ width: `${isMetricsAvailable ? liveMetrics.faithfulnessScore : 0}%` }} 
                       />
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Measures whether generated questions and answers derive exclusively from retrieved RAG context.
+                      Measures whether generated questions derive exclusively from retrieved RAG context.
                     </p>
                   </div>
 
@@ -320,17 +377,17 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                     <div className="flex justify-between font-medium">
                       <span>2. Semantic Chunk Retrieval Relevance</span>
                       <span className="font-mono text-blue-500 font-bold">
-                        {isIngested ? `${liveMetrics.relevanceScore}%` : '0%'}
+                        {isMetricsAvailable ? `${liveMetrics.relevanceScore}%` : '--'}
                       </span>
                     </div>
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-blue-500 rounded-full transition-all duration-500" 
-                        style={{ width: `${isIngested ? liveMetrics.relevanceScore : 0}%` }} 
+                        style={{ width: `${isMetricsAvailable ? liveMetrics.relevanceScore : 0}%` }} 
                       />
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Multi-pass vector similarity (definitions, workflows, comparisons) computed directly from ChromaDB index.
+                      Multi-pass vector similarity (definitions, workflows, trade-offs) computed directly from ChromaDB index.
                     </p>
                   </div>
 
@@ -339,13 +396,13 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                     <div className="flex justify-between font-medium">
                       <span>3. Sentence Boundary Preservation</span>
                       <span className="font-mono text-purple-500 font-bold">
-                        {isIngested ? `${liveMetrics.boundaryScore}%` : '0%'}
+                        {isMetricsAvailable ? `${liveMetrics.boundaryScore}%` : '--'}
                       </span>
                     </div>
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-purple-500 rounded-full transition-all duration-500" 
-                        style={{ width: `${isIngested ? liveMetrics.boundaryScore : 0}%` }} 
+                        style={{ width: `${isMetricsAvailable ? liveMetrics.boundaryScore : 0}%` }} 
                       />
                     </div>
                     <p className="text-[11px] text-muted-foreground">
@@ -358,17 +415,17 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId }
                     <div className="flex justify-between font-medium">
                       <span>4. Citation Attribution Completeness</span>
                       <span className="font-mono text-amber-500 font-bold">
-                        {isIngested ? `${liveMetrics.citationScore}%` : '0%'}
+                        {isMetricsAvailable ? `${liveMetrics.citationScore}%` : '--'}
                       </span>
                     </div>
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-amber-500 rounded-full transition-all duration-500" 
-                        style={{ width: `${isIngested ? liveMetrics.citationScore : 0}%` }} 
+                        style={{ width: `${isMetricsAvailable ? liveMetrics.citationScore : 0}%` }} 
                       />
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Evaluates presence of verifiable source snippets and context citations for every item.
+                      Evaluates presence of verifiable source snippets and context citations for every generated item.
                     </p>
                   </div>
 

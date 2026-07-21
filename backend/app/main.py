@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import ingest, quiz
+from app.api.routes import ingest, quiz, auth
 
 app = FastAPI(title="AI Quiz Generator API")
 
@@ -14,6 +14,7 @@ app.add_middleware(
 
 app.include_router(ingest.router)
 app.include_router(quiz.router)
+app.include_router(auth.router)
 
 @app.get("/health")
 async def health_check():
@@ -25,6 +26,7 @@ async def health_check():
         "llm_model": "gemini-2.5-flash",
         "embedding_model": "text-embedding-004",
         "vector_store": "ChromaDB (Persistent)",
+        "database": "SQLite (quiz_studio.db)",
         "rag_pipeline": "Enabled",
         "version": "1.0.0"
     }
