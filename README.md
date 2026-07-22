@@ -7,7 +7,7 @@
 
 ## 🌐 Live Hosted Application & API
 
-* 🟢 **Live Web Application (Vercel)**: [https://ai-powered-quiz-generation-using-ra.vercel.app](https://ai-powered-quiz-generation-using-ra.vercel.app)
+* 🟢 **Live Web Application (Vercel)**: [https://quiz-generation-rag.vercel.app](https://quiz-generation-rag.vercel.app)
 * ⚡ **Production API Backend (Render)**: [https://ai-quiz-backend-n2oq.onrender.com](https://ai-quiz-backend-n2oq.onrender.com)
 * 📖 **Interactive API Specs (Swagger UI)**: [https://ai-quiz-backend-n2oq.onrender.com/docs](https://ai-quiz-backend-n2oq.onrender.com/docs)
 

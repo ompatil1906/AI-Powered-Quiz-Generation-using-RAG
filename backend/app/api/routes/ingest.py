@@ -26,5 +26,7 @@ async def ingest_lesson(request: IngestRequest):
             "message": f"Ingested {len(chunks)} high-quality sentence-aware chunks successfully into ChromaDB.",
             "rag_stats": stats
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

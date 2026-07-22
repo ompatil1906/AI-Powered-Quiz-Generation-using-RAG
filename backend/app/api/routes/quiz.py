@@ -53,6 +53,8 @@ async def generate_quiz(request: GenerateQuizRequest):
             "rag_stats": rag_stats
         }
         
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=500, detail="Failed to parse LLM response as JSON.")
     except Exception as e:
@@ -74,6 +76,8 @@ async def preview_rag_query(request: RAGQueryRequest):
             "totalChunksInDB": stats.get("chunkCount", 0),
             "chunks": results
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -85,5 +89,7 @@ async def get_rag_eval_metrics(lessonId: str = "agent-mcp-lesson"):
         sample_emb = llm_service.embed_query(sample_query) if (llm_service.check_ready() and lessonId) else None
         metrics = vector_store.evaluate_realtime_metrics(lessonId, sample_emb)
         return metrics
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

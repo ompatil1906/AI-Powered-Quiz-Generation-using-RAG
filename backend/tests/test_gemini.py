@@ -1,18 +1,21 @@
 import os
-import time
+import unittest
 from google import genai
 from dotenv import load_dotenv
 
-load_dotenv()
-try:
-    API_KEY = os.getenv("GEMINI_API_KEY")
-    client = genai.Client(api_key=API_KEY)
-    
-    response = client.models.embed_content(
-        model="gemini-embedding-001",
-        contents=["Hello", "World", "Test"],
-    )
-    print(f"SUCCESS! Returned {len(response.embeddings)} embeddings.")
-except Exception as e:
-    import traceback
-    traceback.print_exc()
+class TestGeminiIntegration(unittest.TestCase):
+    def test_gemini_embedding(self):
+        load_dotenv()
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            self.skipTest("GEMINI_API_KEY not configured")
+        
+        client = genai.Client(api_key=api_key)
+        response = client.models.embed_content(
+            model="gemini-embedding-001",
+            contents=["Hello", "World", "Test"],
+        )
+        self.assertEqual(len(response.embeddings), 3)
+
+if __name__ == "__main__":
+    unittest.main()
