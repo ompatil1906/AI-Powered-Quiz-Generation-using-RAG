@@ -12,7 +12,7 @@ class TestGeminiIntegration(unittest.TestCase):
         
         client = genai.Client(api_key=api_key)
         response = client.models.embed_content(
-            model="gemini-embedding-001",
+            model="text-embedding-004",
             contents=["Hello", "World", "Test"],
         )
         self.assertEqual(len(response.embeddings), 3)

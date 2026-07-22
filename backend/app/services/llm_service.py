@@ -24,14 +24,11 @@ class LLMService:
         return response.embeddings[0].values
 
     def embed_queries(self, queries: list) -> list:
-        embeddings = []
-        for q in queries:
-            resp = self.client.models.embed_content(
-                model=settings.EMBEDDING_MODEL,
-                contents=q,
-            )
-            embeddings.append(resp.embeddings[0].values)
-        return embeddings
+        response = self.client.models.embed_content(
+            model=settings.EMBEDDING_MODEL,
+            contents=queries,
+        )
+        return [e.values for e in response.embeddings]
 
     def generate_quiz(self, context: str, difficulty: str, count: int, types: list, bloom_taxonomy: str = "Remembering") -> dict:
         bloom_guidance = {

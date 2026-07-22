@@ -30,9 +30,12 @@
    - Full support for 6 cognitive depth levels: *Remembering*, *Understanding*, *Applying*, *Analyzing*, *Evaluating*, and *Creating*.
 4. **Real-Time Evaluator & RAG Inspector**:
    - Live dynamic evaluation dashboard measuring Context Faithfulness (**99%**), Semantic Retrieval Relevance (**94.5%+**), Sentence Boundary Preservation (**100%**), and Citation Attributions.
-5. **Verified Source Evidence Citations**:
+5. **High-Performance & Low-Latency Optimizations**:
+   - Uses batched API requests to Google Gemini for vector embeddings, cutting ingestion and generation time significantly.
+   - Caches sample embedding requests for real-time RAG evaluation metrics to achieve near-zero ping latency in the System Inspector.
+6. **Verified Source Evidence Citations**:
    - Every generated quiz item returns verifiable source context quote snippets (`sourceSnippet`) and context references (`contextRef`).
-6. **Authentication & SQLite Persistent History**:
+7. **Authentication & SQLite Persistent History**:
    - Full user authentication (Login, Sign Up, 1-Click Demo mode) backed by a relational SQLite database (`quiz_studio.db`) and JSON exports.
 
 ---

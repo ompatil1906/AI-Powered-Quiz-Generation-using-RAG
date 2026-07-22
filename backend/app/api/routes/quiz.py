@@ -81,12 +81,21 @@ async def preview_rag_query(request: RAGQueryRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+sample_emb_cache = None
+
 @router.get("/rag/eval-metrics")
 async def get_rag_eval_metrics(lessonId: str = "agent-mcp-lesson"):
     """Computes real-time dynamic RAG evaluation metrics directly from the active vector store for System Inspector."""
     try:
-        sample_query = "AI agents Model Context Protocol MCP tools APIs agent to agent architecture"
-        sample_emb = llm_service.embed_query(sample_query) if (llm_service.check_ready() and lessonId) else None
+        global sample_emb_cache
+        if llm_service.check_ready() and lessonId:
+            if sample_emb_cache is None:
+                sample_query = "AI agents Model Context Protocol MCP tools APIs agent to agent architecture"
+                sample_emb_cache = llm_service.embed_query(sample_query)
+            sample_emb = sample_emb_cache
+        else:
+            sample_emb = None
+            
         metrics = vector_store.evaluate_realtime_metrics(lessonId, sample_emb)
         return metrics
     except HTTPException:
