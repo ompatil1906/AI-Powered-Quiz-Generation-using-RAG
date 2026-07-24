@@ -688,7 +688,7 @@ export function EvaluatorPanel({ isOpen, onClose, onLoadSample, activeLessonId, 
                   </div>
                   <ul className="space-y-1 text-muted-foreground list-disc list-inside pl-1">
                     <li><strong>Engine:</strong> ChromaDB (Local/Persistent)</li>
-                    <li><strong>Embedding Model:</strong> Google <code className="bg-muted px-1 py-0.5 rounded font-mono">text-embedding-004</code></li>
+                    <li><strong>Embedding Model:</strong> Google <code className="bg-muted px-1 py-0.5 rounded font-mono">gemini-embedding-2</code></li>
                     <li><strong>Similarity Search:</strong> Cosine distance kNN top-15</li>
                   </ul>
                 </div>

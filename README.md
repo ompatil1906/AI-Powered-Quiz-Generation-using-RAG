@@ -16,7 +16,7 @@
 ## 💡 Key Highlights & Architecture
 
 ```
-[ Lesson Transcript ] ──> [ Sentence-Aware Chunking ] ──> [ Google text-embedding-004 ]
+[ Lesson Transcript ] ──> [ Sentence-Aware Chunking ] ──> [ Google gemini-embedding-2 ]
                                                                        │
 [ Quiz Studio Frontend ] <── [ Gemini 2.5 Flash ] <── [ Multi-Pass ChromaDB kNN ]
 ```
@@ -24,7 +24,7 @@
 1. **Sentence-Aware RAG Chunking**:
    - Strips timestamps (`[00:00:00]`) and splits content on natural sentence boundaries (~700 characters with 150 character sliding overlap) to prevent cutting key definitions mid-sentence.
 2. **Multi-Pass ChromaDB Semantic Search**:
-   - Vector index configured with Cosine distance space (`metadata={"hnsw:space": "cosine"}`) using 768-dimensional Google `text-embedding-004` embeddings.
+   - Vector index configured with Cosine distance space (`metadata={"hnsw:space": "cosine"}`) using 768-dimensional Google `gemini-embedding-2` embeddings.
    - 3-pass search strategy retrieving concepts, API/workflows, and architectural trade-offs.
 3. **Bloom's Taxonomy Cognitive Engine**:
    - Full support for 6 cognitive depth levels: *Remembering*, *Understanding*, *Applying*, *Analyzing*, *Evaluating*, and *Creating*.
@@ -49,7 +49,7 @@
 | **Backend Framework** | Python 3.10, FastAPI, Uvicorn, Pydantic |
 | **Backend Hosting** | Render |
 | **LLM Model** | Google Gemini 2.5 Flash (`gemini-2.5-flash`) |
-| **Embedding Model** | Google Text Embeddings (`text-embedding-004`) |
+| **Embedding Model** | Google Text Embeddings (`gemini-embedding-2`) |
 | **Vector Database** | ChromaDB (Persistent, Cosine distance space) |
 | **Relational Database** | SQLite (`quiz_studio.db` for Users & History) |
 
@@ -218,7 +218,7 @@ Open `http://localhost:5173` in your browser.
 | **RAG Pipeline Design** | 20% | Sentence-aware sliding-window chunking, timestamp stripping, multi-query retrieval passes, and zero-hallucination prompt boundaries. |
 | **Prompt Engineering & LLM** | 20% | Powered by **Google Gemini 2.5 Flash**, returning structured JSON Schema with Bloom's Taxonomy cognitive level conditioning. |
 | **Quiz Quality & Accuracy** | 15% | Real-time System Inspector verifying Context Faithfulness (99%), Semantic Relevance (94.5%+), and Citation Completeness (100%). |
-| **Vector DB & Retrieval Strategy** | 10% | ChromaDB persistent vector database configured with Cosine distance space, `text-embedding-004` unit vectors, and interactive test bench. |
+| **Vector DB & Retrieval Strategy** | 10% | ChromaDB persistent vector database configured with Cosine distance space, `gemini-embedding-2` unit vectors, and interactive test bench. |
 | **Error Handling & Validation** | 10% | Robust request validation, empty transcript handling, LLM fallback JSON parsers, and error toasts. |
 | **Documentation & Deliverables** | 5% | Complete documentation with live deployment links, Swagger docs, API payloads, and Docker setup. |
 
