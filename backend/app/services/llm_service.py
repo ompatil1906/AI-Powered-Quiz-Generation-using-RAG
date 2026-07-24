@@ -12,7 +12,7 @@ class LLMService:
     def embed_batch(self, texts: list) -> list:
         response = self.client.models.embed_content(
             model=settings.EMBEDDING_MODEL,
-            contents=texts,
+            contents=[[t] for t in texts],
         )
         return [e.values for e in response.embeddings]
 
@@ -26,7 +26,7 @@ class LLMService:
     def embed_queries(self, queries: list) -> list:
         response = self.client.models.embed_content(
             model=settings.EMBEDDING_MODEL,
-            contents=queries,
+            contents=[[q] for q in queries],
         )
         return [e.values for e in response.embeddings]
 
